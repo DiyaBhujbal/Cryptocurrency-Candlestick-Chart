@@ -33,3 +33,18 @@ WebSocket API: Used to receive real-time candlestick data from Binance.
 Add more cryptocurrencies dynamically.
 
 Improve error handling and reconnection logic for WebSocket connections.
+
+
+
+# Technologies Used
+React: The core library used for building the user interface.
+
+TradingView Widget: Used to render the candlestick chart and display financial data.
+
+Binance WebSocket API: Provides real-time market data streams for cryptocurrencies.
+
+JavaScript (ES6+): Used for scripting logic and real-time data management.
+
+TailwindCSS: Styling the user interface and ensuring responsive design.
+
+LocalStorage: For persisting candlestick data across symbol switches.
