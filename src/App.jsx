@@ -1,319 +1,108 @@
-// // App.jsx
-// import React, { useState, useEffect } from 'react';
-// import {
-//   Chart as ChartJS,
-//   CategoryScale,
-//   LinearScale,
-//   TimeScale,
-//   Title,
-//   Tooltip,
-//   Legend,
-// } from 'chart.js';
-// import { CandlestickController, CandlestickElement } from 'chartjs-chart-financial';
-// import 'chartjs-adapter-date-fns';
-// import { Chart } from 'react-chartjs-2';
-// //import './App.css'; // You can remove this if you're not using other styles
 
-// ChartJS.register(
-//   CategoryScale,
-//   LinearScale,
-//   TimeScale,
-//   CandlestickController,
-//   CandlestickElement,
-//   Title,
-//   Tooltip,
-//   Legend
-// );
-
-// const App = () => {
-//   const [selectedSymbol, setSelectedSymbol] = useState('ethusdt'); // Default ETH/USDT
-//   const [selectedInterval, setSelectedInterval] = useState('1m');   // Default 1-minute interval
-//   const [candlestickData, setCandlestickData] = useState({});
-
-//   // WebSocket connection setup
-//   useEffect(() => {
-//     const ws = new WebSocket(`wss://stream.binance.com:9443/ws/${selectedSymbol}@kline_${selectedInterval}`);
-
-//     ws.onmessage = (event) => {
-//       const { k: candle } = JSON.parse(event.data);
-//       const newCandle = {
-//         t: candle.t,   // Time
-//         o: candle.o,   // Open price
-//         h: candle.h,   // High price
-//         l: candle.l,   // Low price
-//         c: candle.c,   // Close price
-//       };
-
-//       setCandlestickData((prevData) => ({
-//         ...prevData,
-//         [selectedSymbol]: [...(prevData[selectedSymbol] || []), newCandle],
-//       }));
-//     };
-
-//     return () => ws.close();
-//   }, [selectedSymbol, selectedInterval]);
-
-//   // Load stored chart data from localStorage
-//   useEffect(() => {
-//     const storedData = localStorage.getItem(selectedSymbol);
-//     if (storedData) {
-//       setCandlestickData((prevData) => ({
-//         ...prevData,
-//         [selectedSymbol]: JSON.parse(storedData),
-//       }));
-//     }
-//   }, [selectedSymbol]);
-
-//   // Save candlestick data to localStorage when it changes
-//   useEffect(() => {
-//     if (candlestickData[selectedSymbol]) {
-//       localStorage.setItem(selectedSymbol, JSON.stringify(candlestickData[selectedSymbol]));
-//     }
-//   }, [candlestickData, selectedSymbol]);
-
-//   // Chart data configuration
-//   const chartData = {
-//     datasets: [{
-//       label: `${selectedSymbol.toUpperCase()}`,
-//       data: candlestickData[selectedSymbol]?.map((candle) => ({
-//         x: new Date(candle.t),
-//         o: candle.o,
-//         h: candle.h,
-//         l: candle.l,
-//         c: candle.c,
-//       })),
-//       borderColor: 'green',
-//       borderWidth: 1,
-//     }]
-//   };
-
-//   // Chart options configuration
-//   const chartOptions = {
-//     scales: {
-//       x: {
-//         type: 'time',
-//         time: {
-//           unit: 'minute',
-//         },
-//         title: {
-//           display: true,
-//           text: 'Time',
-//         },
-//       },
-//       y: {
-//         title: {
-//           display: true,
-//           text: 'Price',
-//         },
-//       },
-//     },
-//   };
-
-//   // Handle symbol selection change
-//   const handleSymbolChange = (symbol) => {
-//     setSelectedSymbol(symbol);
-//   };
-
-//   // Handle interval selection change
-//   const handleIntervalChange = (interval) => {
-//     setSelectedInterval(interval);
-//   };
-
-//   return (
-//     <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-4">
-//       <h1 className="text-2xl font-bold mb-4">Cryptocurrency Candlestick Chart</h1>
-      
-//       <div className="mb-4 flex justify-center space-x-4">
-//         <select
-//           value={selectedSymbol}
-//           onChange={(e) => handleSymbolChange(e.target.value)}
-//           className="p-2 border rounded-md bg-white shadow-md"
-//         >
-//           <option value="ethusdt">ETH/USDT</option>
-//           <option value="bnbusdt">BNB/USDT</option>
-//           <option value="dotusdt">DOT/USDT</option>
-//         </select>
-
-//         <select
-//           value={selectedInterval}
-//           onChange={(e) => handleIntervalChange(e.target.value)}
-//           className="p-2 border rounded-md bg-white shadow-md"
-//         >
-//           <option value="1m">1 Minute</option>
-//           <option value="3m">3 Minutes</option>
-//           <option value="5m">5 Minutes</option>
-//         </select>
-//       </div>
-
-//       <div className="candlestick-chart-container w-full max-w-4xl bg-white shadow-md rounded-lg p-4">
-//         {candlestickData[selectedSymbol] ? (
-//           <Chart type="candlestick" data={chartData} options={chartOptions} />
-//         ) : (
-//           <p className="text-center text-gray-500">Loading data...</p>
-//         )}
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default App;
-
-import React, { useState, useEffect } from 'react';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  TimeScale,
-  Title,
-  Tooltip,
-  Legend,
-} from 'chart.js';
-import { CandlestickController, CandlestickElement } from 'chartjs-chart-financial';
-import 'chartjs-adapter-date-fns';
-import { Chart } from 'react-chartjs-2';
+import React, { useState, useEffect, useRef } from 'react';
+import TradingViewChart from './TradingViewChart';
 import './App.css';
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  TimeScale,
-  CandlestickController,
-  CandlestickElement,
-  Title,
-  Tooltip,
-  Legend
-);
-
 const App = () => {
-  const [selectedSymbol, setSelectedSymbol] = useState('ethusdt'); // Default ETH/USDT
-  const [selectedInterval, setSelectedInterval] = useState('1m');   // Default 1-minute interval
-  const [candlestickData, setCandlestickData] = useState({});
+  const [selectedSymbol, setSelectedSymbol] = useState(() => {
+    return localStorage.getItem('selectedSymbol') || 'ETHUSDT'; // Default to ETH/USDT
+  });
+  const [selectedInterval, setSelectedInterval] = useState(() => {
+    return localStorage.getItem('selectedInterval') || '1'; // Default to 1 minute
+  });
+  const [candlestickData, setCandlestickData] = useState(() => {
+    const storedData = localStorage.getItem(`${selectedSymbol}_candlestickData`);
+    return storedData ? JSON.parse(storedData) : [];
+  });
+  const [loading, setLoading] = useState(true);
 
-  // WebSocket connection setup
+  // Store historical data in-memory and in localStorage
+  const historicalData = useRef({
+    ETHUSDT: JSON.parse(localStorage.getItem('ETHUSDT_candlestickData')) || [],
+    BNBUSDT: JSON.parse(localStorage.getItem('BNBUSDT_candlestickData')) || [],
+    DOTUSDT: JSON.parse(localStorage.getItem('DOTUSDT_candlestickData')) || [],
+  });
+
+  // WebSocket connection
   useEffect(() => {
-    const ws = new WebSocket(`wss://stream.binance.com:9443/ws/${selectedSymbol}@kline_${selectedInterval}`);
+    const ws = new WebSocket(`wss://stream.binance.com:9443/ws/${selectedSymbol.toLowerCase()}@kline_${selectedInterval}`);
+
+    ws.onopen = () => {
+      setLoading(false); // Loading complete when WebSocket opens
+    };
 
     ws.onmessage = (event) => {
       const { k: candle } = JSON.parse(event.data);
       const newCandle = {
-        t: candle.t,   // Time
-        o: candle.o,   // Open price
-        h: candle.h,   // High price
-        l: candle.l,   // Low price
-        c: candle.c,   // Close price
+        time: candle.t,
+        open: candle.o,
+        high: candle.h,
+        low: candle.l,
+        close: candle.c,
       };
 
-      setCandlestickData((prevData) => ({
-        ...prevData,
-        [selectedSymbol]: [...(prevData[selectedSymbol] || []), newCandle],
-      }));
+      // Update in-memory historical data
+      historicalData.current[selectedSymbol].push(newCandle);
+      
+      // Save updated data in state
+      setCandlestickData([...historicalData.current[selectedSymbol]]);
+
+      // Persist updated data to localStorage
+      localStorage.setItem(`${selectedSymbol}_candlestickData`, JSON.stringify(historicalData.current[selectedSymbol]));
     };
 
-    return () => ws.close();
+    ws.onerror = (error) => {
+      console.error('WebSocket Error:', error);
+      setLoading(false);
+    };
+
+    ws.onclose = () => {
+      setLoading(false);
+    };
+
+    return () => ws.close(); // Close the WebSocket connection on cleanup
   }, [selectedSymbol, selectedInterval]);
 
-  // Load stored chart data from localStorage
-  useEffect(() => {
-    const storedData = localStorage.getItem(selectedSymbol);
-    if (storedData) {
-      setCandlestickData((prevData) => ({
-        ...prevData,
-        [selectedSymbol]: JSON.parse(storedData),
-      }));
-    }
-  }, [selectedSymbol]);
-
-  // Save candlestick data to localStorage when it changes
-  useEffect(() => {
-    if (candlestickData[selectedSymbol]) {
-      localStorage.setItem(selectedSymbol, JSON.stringify(candlestickData[selectedSymbol]));
-    }
-  }, [candlestickData, selectedSymbol]);
-
-  // Chart data configuration
-  const chartData = {
-    datasets: [{
-      label: `${selectedSymbol.toUpperCase()}`,
-      data: candlestickData[selectedSymbol]?.map((candle) => ({
-        x: new Date(candle.t),
-        o: candle.o,
-        h: candle.h,
-        l: candle.l,
-        c: candle.c,
-      })),
-      borderColor: '#00ff00',
-      borderWidth: 1,
-    }]
-  };
-
-  // Chart options configuration
-  const chartOptions = {
-    scales: {
-      x: {
-        type: 'time',
-        time: {
-          unit: 'minute',
-        },
-        title: {
-          display: true,
-          text: 'Time',
-          color: '#ffffff'
-        },
-        ticks: {
-          color: '#ffffff',
-        },
-      },
-      y: {
-        title: {
-          display: true,
-          text: 'Price',
-          color: '#ffffff',
-        },
-        ticks: {
-          color: '#ffffff',
-        },
-      },
-    },
-    plugins: {
-      legend: {
-        labels: {
-          color: '#ffffff',
-        },
-      },
-      tooltip: {
-        backgroundColor: '#2a2a2a',
-        titleColor: '#ffffff',
-        bodyColor: '#ffffff',
-      },
-    },
-    backgroundColor: '#111111',
-  };
-
-  // Handle symbol selection change
+  // Handle symbol change
   const handleSymbolChange = (symbol) => {
-    setSelectedSymbol(symbol);
+    setSelectedSymbol(symbol.toUpperCase());
+    setLoading(true);
+
+    // Restore data from in-memory storage or reset
+    const storedData = historicalData.current[symbol.toUpperCase()] || [];
+    setCandlestickData(storedData);
+
+    // Persist symbol change in localStorage
+    localStorage.setItem('selectedSymbol', symbol.toUpperCase());
   };
 
-  // Handle interval selection change
+  // Handle interval change
   const handleIntervalChange = (interval) => {
     setSelectedInterval(interval);
+    setLoading(true);
+
+    // Restore data from in-memory storage or reset
+    setCandlestickData(historicalData.current[selectedSymbol] || []);
+
+    // Persist interval change in localStorage
+    localStorage.setItem('selectedInterval', interval);
   };
 
   return (
     <div className="min-h-screen flex flex-col items-center p-4 bg-gray-900 text-white">
       <h1 className="text-4xl font-extrabold text-center text-green-400">
-        Cryptocurrency Candlestick Chart
+        Cryptocurrency TradingView Chart with WebSocket Data
       </h1>
-      
+
       <div className="mb-8 flex justify-center space-x-6">
         <select
           value={selectedSymbol}
           onChange={(e) => handleSymbolChange(e.target.value)}
           className="p-3 border border-transparent rounded-md bg-gray-800 text-white shadow-lg hover:shadow-xl transition-shadow duration-300 focus:outline-none focus:ring-2 focus:ring-green-500"
         >
-          <option value="ethusdt">ETH/USDT</option>
-          <option value="bnbusdt">BNB/USDT</option>
-          <option value="dotusdt">DOT/USDT</option>
+          <option value="ETHUSDT">ETH/USDT</option>
+          <option value="BNBUSDT">BNB/USDT</option>
+          <option value="DOTUSDT">DOT/USDT</option>
         </select>
 
         <select
@@ -321,17 +110,19 @@ const App = () => {
           onChange={(e) => handleIntervalChange(e.target.value)}
           className="p-3 border border-transparent rounded-md bg-gray-800 text-white shadow-lg hover:shadow-xl transition-shadow duration-300 focus:outline-none focus:ring-2 focus:ring-green-500"
         >
-          <option value="1m">1 Minute</option>
-          <option value="3m">3 Minutes</option>
-          <option value="5m">5 Minutes</option>
+          <option value="1">1 Minute</option>
+          <option value="3">3 Minutes</option>
+          <option value="5">5 Minutes</option>
         </select>
       </div>
 
       <div className="candlestick-chart-container w-full max-w-6xl bg-gray-800 shadow-lg rounded-lg p-4">
-        {candlestickData[selectedSymbol] ? (
-          <Chart type="candlestick" data={chartData} options={chartOptions} />
+        {loading ? (
+          <div className="flex justify-center items-center h-full">
+            <p className="text-lg text-green-400">Loading data...</p>
+          </div>
         ) : (
-          <p className="text-center text-gray-500">Loading data...</p>
+          <TradingViewChart selectedSymbol={selectedSymbol} selectedInterval={selectedInterval} candlestickData={candlestickData} />
         )}
       </div>
     </div>
